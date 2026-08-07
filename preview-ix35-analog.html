@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ix35 1.7 CRDi 116CV 2011 • Dashboard PRO Analog</title>
+<style>
+*{box-sizing:border-box;font-family:Inter,system-ui,sans-serif}
+body{margin:0;background:radial-gradient(1100px 700px at 30% -10%, #1e293b 0%, #070a10 58%);color:#fff}
+.wrap{max-width:1180px;margin:0 auto;padding:16px}
+.hero{background:linear-gradient(135deg,#0f1218 0%, #1a1f2b 100%);border:1px solid #ffffff14;border-radius:20px;padding:16px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.logo{width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,#0ea5e9,#1e40af);display:grid;place-items:center;font-weight:900;font-size:18px}
+.badges{display:flex;gap:8px;flex-wrap:wrap}
+.badge{padding:6px 10px;border-radius:999px;background:#ffffff0a;border:1px solid #ffffff14;font-size:11px;font-weight:700}
+.badge.ok{background:#1ed76014;border-color:#1ed76030;color:#1ed760}
+.badge.warn{background:#ffcc0214;border-color:#ffcc0230;color:#ffcc02}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}
+@media(min-width:920px){.grid{grid-template-columns:1.25fr 1.25fr 1fr}}
+.card{background:linear-gradient(180deg,#ffffff0e,#ffffff06);border:1px solid #ffffff14;border-radius:22px;padding:14px;position:relative}
+.gauge{aspect-ratio:1;display:grid;place-items:center;position:relative}
+.label{position:absolute;top:14px;left:50%;transform:translateX(-50%);font-size:10px;letter-spacing:1px;opacity:.65;font-weight:800}
+.val{position:absolute;left:50%;top:58%;transform:translate(-50%,-50%);text-align:center}
+.val b{font-size:26px;font-weight:900;display:block;line-height:1}
+.val span{font-size:11px;opacity:.55;font-weight:700}
+.minmax{position:absolute;bottom:12px;left:12px;right:12px;display:flex;justify-content:space-between;font-size:9px;opacity:.4;font-weight:700}
+.alert-dot{position:absolute;top:12px;right:12px;padding:4px 7px;border-radius:999px;font-size:9px;font-weight:800;border:1px solid}
+.okd{background:#1ed76014;color:#1ed760;border-color:#1ed76030}
+.alr{background:#ff3b3014;color:#ff3b30;border-color:#ff3b3030}
+.controls{margin-top:16px;background:#0f1218;border:1px solid #ffffff14;border-radius:18px;padding:14px;display:grid;gap:12px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(min-width:700px){.row{grid-template-columns:repeat(3,1fr)}}
+.item{background:#ffffff06;border:1px solid #ffffff12;border-radius:14px;padding:10px}
+.item label{font-size:10px;opacity:.6;font-weight:800}
+input[type=range]{width:100%;accent-color:#0ea5e9}
+.aa{margin-top:16px;background:#000;border:1px solid #ffffff18;border-radius:20px;overflow:hidden}
+.aa-h{background:#12151c;padding:10px 14px;display:flex;justify-content:space-between;font-size:12px;font-weight:700}
+.aa-g{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:#ffffff14;padding:1px}
+.aa-c{background:#0b0e13;padding:10px;display:grid;place-items:center;gap:6px}
+.note{background:#0ea5e914;border:1px solid #0ea5e930;color:#7dd3fc;padding:10px 12px;border-radius:12px;font-size:12px;line-height:1.5;margin-top:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero">
+    <div class="logo">ix35</div>
+    <div>
+      <div style="font-weight:900;font-size:16px">Hyundai ix35 1.7 CRDi 116CV • 2011 • D4FD Euro 5</div>
+      <div style="font-size:12px;opacity:.65">1685cc • 260Nm @1250-2750rpm • Potencia máx 4000rpm • 6v manual • 58L</div>
+    </div>
+    <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+      <div style="text-align:right"><div style="font-size:11px;opacity:.6">Puerto OBD2</div><div style="font-size:12px;font-weight:800">Bajo volante izq. • CAN 500kb</div></div>
+      <button onclick="toggle()" id="btn" style="background:#0ea5e9;border:0;color:#fff;padding:10px 14px;border-radius:10px;font-weight:800;cursor:pointer">⏸ Pausar</button>
+    </div>
+  </div>
+  <div class="badges" style="margin-top:12px">
+    <span class="badge ok">● Adaptador: Vgate iCar Pro BLE / Veepeak BLE+</span>
+    <span class="badge">Ralenti 750rpm • Roja 4500rpm</span>
+    <span class="badge warn">⚠ DPF: regenera a 580-620°C ¡no pares motor!</span>
+    <span class="badge">Turbo pico 1.5 bar</span>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="controls">
+    <div style="font-weight:800;font-size:13px">⚙ Ajustes específicos 1.7 CRDi — toca el título del reloj para cambiar PID</div>
+    <div class="row" id="cfg"></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button onclick="setProfile('ix35')" style="flex:1;background:#0ea5e9;border:0;color:#fff;padding:10px;border-radius:10px;font-weight:800">Perfil ix35 CRDi (recomendado)</button>
+      <button onclick="setProfile('dpf')" style="flex:1;background:#ffffff0a;border:1px solid #ffffff14;color:#fff;padding:10px;border-radius:10px;font-weight:700">Vista DPF / EGR</button>
+      <button onclick="exportJson()" style="background:#fff;color:#000;padding:10px 14px;border-radius:10px;font-weight:800;border:0">⬇ Exportar JSON</button>
+    </div>
+  </div>
+
+  <div class="aa">
+    <div class="aa-h"><span>◀ Dashboard PRO • ix35 1.7 CRDi ANALOG</span><span style="opacity:.6">Android Auto • 6 relojes</span></div>
+    <div class="aa-g" id="aa"></div>
+    <div style="padding:8px;text-align:center;font-size:11px;opacity:.4">Vista real en Android Auto — mismos PIDs que Car Scanner</div>
+  </div>
+
+  <div class="note">
+    <b>Consejos para tu 1.7 CRDi 2011:</b><br>
+    • <b>DPF:</b> Si en autovía ves Escape/DPF >580°C durante 12-18 min, está regenerando. Mantén >2000rpm y no lo pares a ralentí o se saturará.<br>
+    • <b>Turbo:</b> Silbido + boost <0.9 bar a 3000rpm = manguito intercooler rajado (avería típica ix35 1.7).<br>
+    • <b>EGR:</b> Si admisión >65°C constante y MAF <9 g/s a ralentí, EGR sucia.<br>
+    • <b>Refrigerante:</b> Normal 86-92°C. Si pasa 102°C en llano, termostato o EGR cooler.<br>
+    • En Car Scanner activa: Ajustes > Sensores > <b>Hyundai/Kia Extended PIDs + DPF temp</b> (si no lo ves, el 6º reloj se cambia a Carga Motor automáticamente).
+  </div>
+</div>
+
+<script>
+const P={
+  RPM:{l:'RPM',u:'rpm',mn:0,mx:5000,red:4500},
+  SPEED:{l:'Velocidad',u:'km/h',mn:0,mx:200},
+  BOOST:{l:'Turbo',u:'bar',mn:0,mx:2.0,red:1.7},
+  COOLANT:{l:'Refrigerante',u:'°C',mn:40,mx:120,red:102},
+  INTAKE:{l:'Admisión',u:'°C',mn:0,mx:90,red:65},
+  VOLTAGE:{l:'Batería',u:'V',mn:11,mx:15.5,redMin:11.8},
+  LOAD:{l:'Carga',u:'%',mn:0,mx:100},
+  MAF:{l:'MAF',u:'g/s',mn:0,mx:60},
+  FUEL:{l:'Combustible',u:'%',mn:0,mx:100},
+  DPF:{l:'Escape DPF',u:'°C',mn:100,mx:650,red:600},
+  EGR:{l:'EGR',u:'%',mn:0,mx:100}
+}
+let profiles={
+  ix35:['RPM','SPEED','BOOST','COOLANT','INTAKE','DPF'],
+  dpf:['RPM','DPF','BOOST','INTAKE','MAF','EGR']
+}
+let cur='ix35'
+let slots=profiles[cur].slice()
+let vals={RPM:780,SPEED:0,BOOST:0.2,COOLANT:88,INTAKE:33,VOLTAGE:14.2,LOAD:28,MAF:11,FUEL:62,DPF:240,EGR:12}
+let run=true
+function svg(pidId,val){
+  const p=P[pidId]; const pct=Math.max(0,Math.min(1,(val-p.mn)/(p.mx-p.mn)))
+  const start=135,sweep=270,angle=start+pct*sweep,r=92,cx=110,cy=110
+  const circ=2*Math.PI*r, dash=sweep/360*circ, off=circ-dash
+  const prog=dash*pct
+  const alert=(p.red&&val>p.red)||(p.redMin&&val<p.redMin)
+  const col=alert?'#ff3b30':(pidId==='RPM'&&pct>0.88?'#ff3b30':'#0ea5e9')
+  let ticks=''
+  for(let i=0;i<=10;i++){
+    const a=(start+i*sweep/10)*Math.PI/180, inner=i%2==0?74:78, outer=i%2==0?84:82
+    const x1=cx+Math.cos(a)*inner,y1=cy+Math.sin(a)*inner,x2=cx+Math.cos(a)*outer,y2=cy+Math.sin(a)*outer
+    ticks+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${i%2==0?'#ffffff66':'#ffffff26'}" stroke-width="${i%2==0?2.2:1.2}" stroke-linecap="round"/>`
+    if(i%2==0){const v=Math.round(p.mn+i/10*(p.mx-p.mn)); const lx=cx+Math.cos(a)*62, ly=cy+Math.sin(a)*62; ticks+=`<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" font-size="7" font-weight="700" fill="#fff" opacity=".4">${v}</text>`}
+  }
+  const rad=angle*Math.PI/180, nx=cx+Math.cos(rad)*(r-26), ny=cy+Math.sin(rad)*(r-26)
+  return `<svg viewBox="0 0 220 220" style="width:100%;height:100%"><circle cx="${cx}" cy="${cy}" r="${r}" fill="#1A1E26"/><circle cx="${cx}" cy="${cy}" r="${r-4}" fill="none" stroke="#ffffff14" stroke-width="1.2"/><circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#ffffff12" stroke-width="10" stroke-linecap="round" stroke-dasharray="${dash} ${circ-dash}" stroke-dashoffset="${off}" transform="rotate(${start} ${cx} ${cy})"/><circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${col}" stroke-width="10" stroke-linecap="round" stroke-dasharray="${prog} ${circ-prog}" stroke-dashoffset="${off}" transform="rotate(${start} ${cx} ${cy})" style="filter:drop-shadow(0 0 6px ${col}66)"/>${ticks}<line x1="${cx}" y1="${cy}" x2="${nx}" y2="${ny}" stroke="#fff" stroke-width="3.2" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="14" fill="#1f2430" stroke="#ffffff18"/><circle cx="${cx}" cy="${cy}" r="9" fill="#fff"/><circle cx="${cx}" cy="${cy}" r="3.2" fill="#070a10"/></svg>`
+}
+function render(){
+  const g=document.getElementById('grid'); g.innerHTML=''
+  slots.forEach((id,i)=>{
+    const p=P[id], v=vals[id]||0, alert=(p.red&&v>p.red)||(p.redMin&&v<p.redMin)
+    const d=document.createElement('div'); d.className='card'
+    d.innerHTML=`<div class="alert-dot ${alert?'alr':'okd'}">${alert?'⚠ ALERTA':'● OK'}</div><div class="label" style="cursor:pointer" onclick="pick(${i})">${p.l.toUpperCase()} ▾</div><div class="gauge">${svg(id,v)}</div><div class="val"><b>${['VOLTAGE','BOOST'].includes(id)?v.toFixed(1+(id==='BOOST'?1:0)):Math.round(v)}</b><span>${p.u}</span></div><div class="minmax"><span>${p.mn}</span><span>${p.mx}</span></div>`
+    d.querySelector('.gauge').onclick=()=>pick(i); g.appendChild(d)
+  })
+  const aa=document.getElementById('aa'); aa.innerHTML=''
+  slots.forEach(id=>{
+    const p=P[id], v=vals[id]||0
+    const c=document.createElement('div'); c.className='aa-c'
+    c.innerHTML=`<span style="font-size:9px;opacity:.5;font-weight:800">${p.l.toUpperCase()}</span><div style="width:110px;height:110px">${svg(id,v)}</div><div style="font-weight:900">${['VOLTAGE','BOOST'].includes(id)?v.toFixed(1):Math.round(v)} <span style="opacity:.5;font-size:10px">${p.u}</span></div>`
+    aa.appendChild(c)
+  })
+  const cfg=document.getElementById('cfg'); cfg.innerHTML=slots.map((id,i)=>{
+    const p=P[id]
+    return `<div class="item"><label>${i+1}. ${p.l.toUpperCase()}</label><select onchange="slots[${i}]=this.value;render()">${Object.keys(P).map(k=>`<option value="${k}" ${k===id?'selected':''}>${P[k].l} (${P[k].u})</option>`).join('')}</select><input type="range" min="${p.mn}" max="${p.mx}" step="${p.mx>100?1:0.1}" value="${vals[id]}" oninput="vals['${id}']=parseFloat(this.value);render()"><div style="display:flex;justify-content:space-between;font-size:11px;opacity:.6"><span>${p.mn}</span><b style="color:#fff">${['VOLTAGE','BOOST'].includes(id)?vals[id].toFixed(1):Math.round(vals[id])} ${p.u}</b><span>${p.mx}</span></div></div>`
+  }).join('')
+}
+function pick(i){
+  const n=prompt('Elige PID:\n'+Object.keys(P).map(k=>`- ${k}: ${P[k].l} (${P[k].u})`).join('\n'), slots[i])
+  if(n && P[n.toUpperCase()]){slots[i]=n.toUpperCase();render()}
+}
+function setProfile(k){ cur=k; slots=profiles[k].slice(); render() }
+function toggle(){run=!run; document.getElementById('btn').textContent=run?'⏸ Pausar':'▶ Reanudar'}
+function exportJson(){
+  const data={vehiculo:"Hyundai ix35 1.7 CRDi 116CV 2011", perfil:cur, slots, timestamp:new Date().toISOString()}
+  const b=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}), a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='ix35_1.7CRDi_profile.json'; a.click()
+}
+function tick(){
+  if(!run) return
+  const t=Date.now()/1000
+  vals.RPM=780+Math.abs(Math.sin(t*0.55))*2800 + Math.random()*60
+  vals.SPEED=Math.abs(Math.sin(t*0.28))*110
+  vals.BOOST=0.25+Math.abs(Math.sin(t*0.85))*1.1
+  vals.COOLANT=88+Math.sin(t*0.12)*2.5 + Math.random()
+  vals.INTAKE=33+Math.random()*1.5
+  // Simula regeneración DPF cada ~40s
+  const regen = Math.sin(t*0.07) > 0.85
+  vals.DPF = regen ? 585 + Math.random()*25 : 240 + Math.random()*30
+  vals.EGR = 12 + Math.abs(Math.sin(t*0.5))*25
+  vals.MAF=11+Math.random()*6
+  vals.LOAD=24+Math.abs(Math.sin(t*0.5))*40
+  render()
+}
+setInterval(tick,160); render(); tick()
+</script>
+</body>
+</html>

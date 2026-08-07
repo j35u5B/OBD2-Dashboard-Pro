@@ -1,0 +1,97 @@
+{
+  "vehiculo": "Hyundai ix35 1.7 CRDi 116CV (D4FD) - 2011 - Euro 5 - 1685cc - 260Nm @ 1250-2750rpm - Potencia max 4000rpm",
+  "puerto_obd2": "Debajo del volante, a la izquierda, sobre la tapa de fusibles. Tapa plástica negra.",
+  "protocolo": "CAN 11bit 500kb - 100% compatible ELM327",
+  "adaptador_recomendado": "Vgate iCar Pro BLE 4.0 o Veepeak BLE+ (evitar ELM327 azul barato, falla en Hyundai con CAN)",
+  "perfil": {
+    "nombre": "ix35 1.7 CRDi ANALOG PRO",
+    "tema": "DARK_PRO",
+    "descripcion": "Optimizado para diesel Euro5 con DPF. Prioridad turbo, EGR y temperaturas para cuidar DPF/FAP",
+    "relojes": [
+      {
+        "pos": 1,
+        "tipo": "ANALOG_GRANDE",
+        "pid": "RPM",
+        "label": "RPM",
+        "unidad": "rpm",
+        "rango": [0, 5000],
+        "zona_roja": 4500,
+        "alerta": 4700,
+        "nota": "Ralenti 750-800. Corte inyección ~4800. Par máximo 1250-2750rpm, no hace falta pasar de 4000"
+      },
+      {
+        "pos": 2,
+        "tipo": "ANALOG_GRANDE",
+        "pid": "SPEED",
+        "label": "Velocidad",
+        "unidad": "km/h",
+        "rango": [0, 200],
+        "nota": "Velocidad ECU (2-3 km/h más que cuadro)"
+      },
+      {
+        "pos": 3,
+        "tipo": "ANALOG_PEQUENO",
+        "pid": "BOOST",
+        "label": "Turbo",
+        "unidad": "bar",
+        "rango": [0, 2.0],
+        "alerta": 1.7,
+        "pid_obd": "010B (MAP) - 015E alternativo",
+        "nota": "1.7 CRDi sopla 1.4-1.6 bar pico. Si ves >1.75 bar sostenido revisa wastegate/MAP"
+      },
+      {
+        "pos": 4,
+        "tipo": "ANALOG_PEQUENO",
+        "pid": "COOLANT_TEMP",
+        "label": "Refrigerante",
+        "unidad": "°C",
+        "rango": [40, 120],
+        "alerta": 102,
+        "critico": 108,
+        "nota": "Normal 86-92°C. Termostato abre 88°C. Si pasa 102°C en llano, revisa EGR cooler / radiador"
+      },
+      {
+        "pos": 5,
+        "tipo": "ANALOG_PEQUENO",
+        "pid": "INTAKE_TEMP",
+        "label": "Admisión",
+        "unidad": "°C",
+        "rango": [0, 90],
+        "alerta": 65,
+        "nota": "Con intercooler limpio: ambiente +15-25°C. Si ves 70°C+ en verano, intercooler sucio o manguito rajado"
+      },
+      {
+        "pos": 6,
+        "tipo": "ANALOG_PEQUENO",
+        "pid": "DPF_TEMP",
+        "label": "Escape/DPF",
+        "unidad": "°C",
+        "rango": [100, 650],
+        "alerta": 600,
+        "pid_obd": "018B / Hyundai extended PID 2203xx (Car Scanner > Hyundai > DPF)",
+        "alternativa_si_no_hay": "ENGINE_LOAD",
+        "nota": "Clave en tu Euro5: regeneración DPF = 580-620°C. Si ves 620°C en autovía, está regenerando: NO PARES EL MOTOR. Sustituir por Carga motor si tu ELM no lee extendido"
+      }
+    ],
+    "gauges_extra_recomendados_si_quieres_8": ["MAF (g/s) normal 8-22", "EGR % (PID 012C)", "Voltaje 14.1V", "Consumo instantáneo"],
+    "colores": {
+      "fondo": "#0A0C10",
+      "aguja": "#FFFFFF",
+      "ok": "#1ED760",
+      "alerta": "#FF3B30",
+      "turbo_ok": "#1ED760",
+      "turbo_mid": "#FFCC02",
+      "turbo_high": "#FF3B30"
+    }
+  },
+  "pids_car_scanner_config": {
+    "como_activar_extendidos": "Car Scanner > Ajustes > Sensores > Hyundai/Kia > Activar 'Extended PIDs' + 'DPF temperature'",
+    "pids_verificados_ix35_1.7": ["010C RPM", "010D Speed", "0105 Coolant", "010F Intake", "010B MAP/Boost", "0110 MAF", "0104 Load", "0142 Voltaje", "018B DPF temp (extendido)", "A406 DPF soot %"],
+    "truco_dpf": "Si no ves DPF temp, usa Car Scanner PRO > Dashboard > Añadir sensor > Hyundai > Exhaust Gas Temperature Bank 1 Sensor 3"
+  },
+  "umbrales_mantenimiento_ix35": {
+    "regen_dpf": "Cada 250-500km, dura 12-18min a >2000rpm. No cortes a ralentí si ves >580°C",
+    "egr": "Si admisión >65°C crónicos y MAF bajo (<9 g/s a ralentí), EGR sucia",
+    "turbo": "Silbido + boost <0.9 bar a 3000rpm = manguito intercooler rajado (muy común en 1.7 CRDi)"
+  }
+}

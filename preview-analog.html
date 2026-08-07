@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<title>OBD2 Dashboard PRO • Analog</title>
+<style>
+*{box-sizing:border-box;font-family:Inter,system-ui,-apple-system,sans-serif}
+body{margin:0;background:radial-gradient(1200px 700px at 30% -10%, #1e293b 0%, #0a0c10 55%);color:#fff;min-height:100vh}
+.wrap{max-width:1180px;margin:0 auto;padding:18px}
+.top{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:#0f1218f2;border:1px solid #ffffff14;border-radius:18px;padding:14px 16px;backdrop-filter:blur(12px);position:sticky;top:10px;z-index:20}
+.brand{display:flex;gap:12px;align-items:center}
+.logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#e11d48,#991b1b);display:grid;place-items:center;font-weight:900}
+.live{display:flex;align-items:center;gap:8px;background:#1ed76014;border:1px solid #1ed76030;padding:8px 12px;border-radius:999px;font-size:12px;font-weight:700}
+.dot{width:8px;height:8px;border-radius:50%;background:#1ed760;box-shadow:0 0 10px #1ed760;animation:pulse 1.4s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.pill{padding:8px 12px;border-radius:999px;border:1px solid #ffffff1a;background:#ffffff0a;color:#fff;font-size:12px;font-weight:600;cursor:pointer}
+.pill.active{background:#e11d48;border-color:#e11d48}
+select, button{background:#1a1f2b;color:#fff;border:1px solid #ffffff18;border-radius:10px;padding:8px 11px;font-size:12px;font-weight:600}
+.btn{cursor:pointer}
+.btn-primary{background:#e11d48;border-color:#e11d48}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}
+@media(min-width:900px){.grid{grid-template-columns:1.25fr 1.25fr 1fr}}
+.card{background:linear-gradient(180deg,#ffffff0e,#ffffff06);border:1px solid #ffffff14;border-radius:22px;padding:14px;position:relative;overflow:hidden}
+.card::before{content:"";position:absolute;inset:0;background:radial-gradient(400px 200px at 50% 0%, #ffffff0a, transparent 60%);pointer-events:none}
+.gauge-wrap{position:relative;aspect-ratio:1;display:grid;place-items:center}
+svg{width:100%;height:100%;overflow:visible}
+.tick{stroke:#ffffff40;stroke-linecap:round}
+.tick-minor{stroke:#ffffff18}
+.arc-bg{fill:none;stroke:#ffffff12;stroke-width:10;stroke-linecap:round}
+.arc-val{fill:none;stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset .18s linear, stroke .2s}
+.needle{stroke:#fff;stroke-width:3.2;stroke-linecap:round;filter:drop-shadow(0 2px 6px rgba(0,0,0,.5))}
+.center{fill:#1f2430;stroke:#ffffff18;stroke-width:1.2}
+.center2{fill:#fff}
+.center3{fill:#0a0c10}
+.label{position:absolute;top:16px;left:50%;transform:translateX(-50%);font-size:10px;letter-spacing:1px;opacity:.65;font-weight:800;text-align:center;white-space:nowrap}
+.val{position:absolute;left:50%;top:58%;transform:translate(-50%,-50%);text-align:center}
+.val b{font-size:26px;font-weight:900;line-height:1;display:block}
+.val span{font-size:11px;opacity:.55;font-weight:700}
+.minmax{position:absolute;bottom:14px;left:14px;right:14px;display:flex;justify-content:space-between;font-size:9px;opacity:.45;font-weight:700}
+.badge{position:absolute;top:14px;right:14px;font-size:9px;font-weight:800;padding:4px 7px;border-radius:999px;background:#1ed7601a;color:#1ed760;border:1px solid #1ed76030}
+.badge.alert{background:#ff3b3016;color:#ff3b30;border-color:#ff3b3030}
+.small-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(min-width:900px){.small-grid{grid-template-columns:1fr 1fr}}
+.aa{margin-top:18px;background:#000;border:1px solid #ffffff18;border-radius:22px;overflow:hidden}
+.aa-head{background:#12151c;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:700;border-bottom:1px solid #ffffff12}
+.aa-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:#ffffff14;padding:1px}
+.aa-cell{background:#0b0e13;padding:12px;display:grid;place-items:center;gap:6px}
+.aa-cell svg{width:110px;height:110px}
+.aa-cell span{font-size:10px;opacity:.6;font-weight:700;letter-spacing:.6px}
+.config{margin-top:16px;background:#0f1218;border:1px solid #ffffff14;border-radius:18px;padding:14px;display:grid;gap:12px}
+.conf-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(min-width:700px){.conf-row{grid-template-columns:repeat(3,1fr)}}
+.conf-item{background:#ffffff06;border:1px solid #ffffff12;border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:6px}
+.conf-item label{font-size:10px;opacity:.6;font-weight:800;letter-spacing:.7px}
+.conf-item select{width:100%}
+.hint{font-size:11px;opacity:.55;text-align:center;margin-top:10px;line-height:1.5}
+.range{accent-color:#e11d48}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand">
+      <div class="logo">OBD</div>
+      <div>
+        <div style="font-weight:900;letter-spacing:.3px">DASHBOARD PRO • ANALOG</div>
+        <div style="font-size:11px;opacity:.6">Relojes analógicos configurables • Android Auto nativo</div>
+      </div>
+    </div>
+    <div class="live"><div class="dot" id="dot"></div><span id="liveText">DEMO ELM327 • 5 Hz</span></div>
+    <div class="controls">
+      <button class="btn" onclick="toggle()" id="btnPlay">⏸ Pausar</button>
+      <select id="themeSel" onchange="setTheme(this.value)"><option value="dark">DARK PRO</option><option value="red">SPORT RED</option><option value="alpine">ALPINE BLUE</option><option value="carbon">CARBON</option></select>
+      <button class="btn btn-primary" onclick="exportProfile()">⬇ Exportar perfil</button>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;align-items:center">
+    <span style="font-size:12px;font-weight:800;opacity:.8">PERFIL:</span>
+    <div id="chips" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+    <span style="margin-left:auto;font-size:11px;opacity:.5">Toca el nombre del reloj para cambiar el PID • Arrastra el slider para simular valor</span>
+  </div>
+
+  <div class="grid" id="mainGrid"></div>
+
+  <div class="config" id="configPanel"></div>
+
+  <div class="aa">
+    <div class="aa-head"><span>◀ Dashboard PRO • <span id="aaProfile">Sport Analog</span> • Android Auto</span><span style="opacity:.6;font-size:11px">GridTemplate • 6 relojes</span></div>
+    <div class="aa-grid" id="aaGrid"></div>
+    <div style="padding:10px;text-align:center;font-size:11px;opacity:.45">Vista real en Android Auto — relojes vectoriales 100% compatibles (no usa Map ni imágenes)</div>
+  </div>
+  <p class="hint">Compatible con Car Scanner ELM OBD2, Torque Pro y cualquier ELM327. Los PIDs son idénticos (010C RPM, 010D Speed, 0105 Coolant, etc). En el APK cada reloj es un <code>AnalogGauge.kt</code> con Canvas nativo — el mismo código que ves aquí en SVG.<br>Proyecto actualizado en <b>/OBD2-Dashboard-Pro</b> — abre en Android Studio y compila.</p>
+</div>
+
+<script>
+const PIDS = {
+  RPM:{label:'RPM', unit:'rpm', min:0, max:8000, red:6500},
+  SPEED:{label:'Velocidad', unit:'km/h', min:0, max:260, red:200},
+  COOLANT:{label:'Refrigerante', unit:'°C', min:40, max:130, red:105},
+  BOOST:{label:'Turbo', unit:'bar', min:0, max:2.5, red:1.8},
+  VOLTAGE:{label:'Batería', unit:'V', min:11, max:15.5, redMin:11.8},
+  LOAD:{label:'Carga', unit:'%', min:0, max:100},
+  INTAKE:{label:'Admisión', unit:'°C', min:0, max:90},
+  THROTTLE:{label:'Acelerador', unit:'%', min:0, max:100},
+  MAF:{label:'MAF', unit:'g/s', min:0, max:60},
+  FUEL:{label:'Combustible', unit:'%', min:0, max:100},
+}
+const PROFILES={
+  'Sport Analog':['RPM','SPEED','BOOST','COOLANT','VOLTAGE','LOAD'],
+  'Clásico GT':['SPEED','RPM','COOLANT','VOLTAGE','FUEL','INTAKE'],
+  'Diesel Pro':['RPM','BOOST','COOLANT','MAF','VOLTAGE','LOAD'],
+  'Minimal':['SPEED','RPM','COOLANT','FUEL','VOLTAGE','THROTTLE']
+}
+let current='Sport Analog'
+let slots=PROFILES[current].slice()
+let values={RPM:0,SPEED:0,COOLANT:88,BOOST:0,VOLTAGE:14.1,LOAD:0,INTAKE:32,THROTTLE:0,MAF:14,FUEL:64}
+let running=true
+
+function gaugeSVG(pidId, value, size=220){
+  const pid=PIDS[pidId]
+  const min=pid.min, max=pid.max
+  const pct=Math.max(0,Math.min(1,(value-min)/(max-min)))
+  const start=135, sweep=270, angle=start+pct*sweep
+  const r=92, cx=110, cy=110, circ=2*Math.PI*r
+  const dash=sweep/360*circ
+  const off=circ-dash
+  const progDash=dash*pct
+  const isAlert = (pid.red && value>pid.red) || (pid.redMin && value<pid.redMin)
+  const color = isAlert ? '#ff3b30' : (pct>0.85 && pidId==='RPM' ? '#ff3b30' : '#1ed760')
+  // ticks
+  let ticks=''
+  for(let i=0;i<=10;i++){
+    const a=(start + i*sweep/10)*Math.PI/180
+    const isMajor=i%2===0
+    const inner=isMajor?74:78, outer=isMajor?84:82
+    const x1=cx+Math.cos(a)*inner, y1=cy+Math.sin(a)*inner
+    const x2=cx+Math.cos(a)*outer, y2=cy+Math.sin(a)*outer
+    ticks+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" class="${isMajor?'tick':'tick tick-minor'}" stroke-width="${isMajor?2.2:1.2}"/>`
+    if(isMajor){
+      const v=Math.round(min + i/10*(max-min))
+      const lx=cx+Math.cos(a)*62, ly=cy+Math.sin(a)*62
+      ticks+=`<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" font-size="7" font-weight="700" fill="#fff" opacity=".45">${v}</text>`
+    }
+  }
+  // needle
+  const rad=angle*Math.PI/180
+  const nx=cx+Math.cos(rad)*(r-26), ny=cy+Math.sin(rad)*(r-26)
+  return `
+  <svg viewBox="0 0 220 220">
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="#1A1E26"/>
+    <circle cx="${cx}" cy="${cy}" r="${r-4}" fill="none" stroke="#ffffff14" stroke-width="1.2"/>
+    <!-- arcs -->
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" class="arc-bg" stroke-dasharray="${dash} ${circ-dash}" stroke-dashoffset="${off}" transform="rotate(${start} ${cx} ${cy})"/>
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" class="arc-val" stroke="${color}" stroke-dasharray="${progDash} ${circ-progDash}" stroke-dashoffset="${off}" transform="rotate(${start} ${cx} ${cy})" style="filter:drop-shadow(0 0 6px ${color}66)"/>
+    ${ticks}
+    <line x1="${cx}" y1="${cy}" x2="${nx}" y2="${ny}" class="needle"/>
+    <circle cx="${cx}" cy="${cy}" r="14" class="center"/>
+    <circle cx="${cx}" cy="${cy}" r="9" class="center2"/>
+    <circle cx="${cx}" cy="${cy}" r="3.2" class="center3"/>
+  </svg>`
+}
+
+function render(){
+  document.getElementById('chips').innerHTML=Object.keys(PROFILES).map(k=>`<div class="pill ${k===current?'active':''}" onclick="setProfile('${k}')">${k}</div>`).join('')
+  document.getElementById('aaProfile').textContent=current
+  const main=document.getElementById('mainGrid'); main.innerHTML=''
+  const isWide=window.innerWidth>=900
+  // Layout: 2 grandes + 4 pequeños (responsive)
+  slots.forEach((pidId, i)=>{
+    const pid=PIDS[pidId]
+    const v=values[pidId]||0
+    const isLarge=i<2
+    const div=document.createElement('div')
+    div.className='card'
+    if(isLarge) div.style.gridColumn=isWide?'span 1':'span 1'
+    div.innerHTML=`
+      <div class="badge ${ (pid.red && v>pid.red) || (pid.redMin && v<pid.redMin) ? 'alert':''}">${ (pid.red && v>pid.red) ? '⚠ ALERTA' : '● TIEMPO REAL'}</div>
+      <div class="label" style="cursor:pointer" onclick="pickPid(${i})">${pid.label.toUpperCase()} ▾</div>
+      <div class="gauge-wrap">${gaugeSVG(pidId, v)}</div>
+      <div class="val"><b style="font-size:${isLarge?'28px':'22px'}">${['VOLTAGE','BOOST'].includes(pidId)?v.toFixed(1):Math.round(v)}</b><span>${pid.unit}</span></div>
+      <div class="minmax"><span>${pid.min}</span><span>${pid.max}</span></div>
+    `
+    // click on gauge to change pid
+    div.querySelector('.gauge-wrap').onclick=()=>pickPid(i)
+    main.appendChild(div)
+  })
+  // AA 6
+  const aa=document.getElementById('aaGrid'); aa.innerHTML=''
+  slots.forEach(pidId=>{
+    const v=values[pidId]||0
+    const pid=PIDS[pidId]
+    const cell=document.createElement('div')
+    cell.className='aa-cell'
+    cell.innerHTML=`<span>${pid.label.toUpperCase()}</span>${gaugeSVG(pidId,v,110)}<div style="font-weight:900">${['VOLTAGE','BOOST'].includes(pidId)?v.toFixed(2):Math.round(v)} <span style="opacity:.5;font-size:11px">${pid.unit}</span></div>`
+    aa.appendChild(cell)
+  })
+  // config panel sliders
+  const cfg=document.getElementById('configPanel'); cfg.innerHTML='<div style="font-weight:800;font-size:13px">⚙ Configuración de relojes (arrastra para simular)</div><div class="conf-row">'+slots.map((pidId,i)=>{
+    const pid=PIDS[pidId]
+    return `<div class="conf-item"><label>${i+1}. ${pid.label.toUpperCase()}</label>
+      <select onchange="slots[${i}]=this.value; render()">${Object.keys(PIDS).map(k=>`<option value="${k}" ${k===pidId?'selected':''}>${PIDS[k].label} (${PIDS[k].unit})</option>`).join('')}</select>
+      <input class="range" type="range" min="${pid.min}" max="${pid.max}" step="${pid.max>100?1:0.1}" value="${values[pidId]}" oninput="values['${pidId}']=parseFloat(this.value); render()">
+      <div style="display:flex;justify-content:space-between;font-size:11px;opacity:.6"><span>${pid.min}</span><span style="font-weight:800;color:#fff">${['VOLTAGE','BOOST'].includes(pidId)?values[pidId].toFixed(1):Math.round(values[pidId])} ${pid.unit}</span><span>${pid.max}</span></div>
+    </div>`
+  }).join('')+'</div>'
+}
+
+function pickPid(idx){
+  const cur=slots[idx]
+  const next=prompt('Elige PID:\n'+Object.keys(PIDS).map(k=>`- ${k}: ${PIDS[k].label} (${PIDS[k].unit})`).join('\n'), cur)
+  if(next && PIDS[next.toUpperCase()]){ slots[idx]=next.toUpperCase(); render() }
+}
+function setProfile(k){ current=k; slots=PROFILES[k].slice(); render() }
+function toggle(){ running=!running; document.getElementById('btnPlay').textContent=running?'⏸ Pausar':'▶ Reanudar'; document.getElementById('dot').style.background=running?'#1ed760':'#ff3b30'; document.getElementById('liveText').textContent=running?'DEMO ELM327 • 5 Hz':'PAUSADO' }
+function setTheme(v){
+  if(v==='red') document.body.style.background='radial-gradient(1100px 650px at 30% -10%, #3a0f0f 0%, #0a0c10 60%)'
+  else if(v==='alpine') document.body.style.background='radial-gradient(1100px 650px at 30% -10%, #0e2a36 0%, #0a0c10 60%)'
+  else if(v==='carbon') document.body.style.background='#121212'
+  else document.body.style.background='radial-gradient(1200px 700px at 30% -10%, #1e293b 0%, #0a0c10 55%)'
+}
+function exportProfile(){
+  const data={profile:current, theme:document.getElementById('themeSel').value, slots, timestamp:new Date().toISOString()}
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'})
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='dashboard-pro-analog-'+current.replace(/\s/g,'_')+'.json'; a.click()
+}
+
+function tick(){
+  if(!running) return
+  const t=Date.now()/1000
+  values.RPM=850+Math.abs(Math.sin(t*0.7))*4200 + (Math.random()*100-50)
+  values.SPEED=Math.abs(Math.sin(t*0.32))*135
+  values.BOOST=Math.abs(Math.sin(t*0.9))*1.25
+  values.COOLANT=88+Math.sin(t*0.15)*3 + Math.random()
+  values.VOLTAGE=14.15+Math.sin(t*0.4)*0.25
+  values.LOAD=22+Math.abs(Math.sin(t*0.55))*55
+  values.INTAKE=31+Math.random()*2
+  values.THROTTLE=Math.abs(Math.sin(t*0.82))*90
+  values.MAF=13+Math.random()*9
+  values.FUEL=64
+  render()
+}
+setInterval(tick,160)
+render(); tick()
+
+// Responsive re-render
+window.addEventListener('resize', render)
+</script>
+</body>
+</html>

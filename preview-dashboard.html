@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>OBD2 Dashboard PRO - Preview</title>
+<style>
+*{box-sizing:border-box;font-family:Inter,system-ui,sans-serif}
+body{margin:0;background:#0a0c10;color:#fff}
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+.header{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;background:#12151b;border-radius:16px;border:1px solid #ffffff12;margin-bottom:18px}
+.badge{display:flex;align-items:center;gap:10px}
+.dot{width:10px;height:10px;border-radius:50%;background:#1ed760;box-shadow:0 0 12px #1ed760}
+.btn{background:#e11d48;color:#fff;border:0;padding:10px 16px;border-radius:10px;font-weight:700;cursor:pointer}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}
+.chip{padding:8px 14px;border-radius:999px;border:1px solid #ffffff18;background:#ffffff0a;font-size:12px;cursor:pointer}
+.chip.active{background:#e11d48;border-color:#e11d48}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+@media(min-width:800px){.grid{grid-template-columns:repeat(3,1fr)}}
+.card{background:#ffffff0a;border:1px solid #ffffff12;border-radius:18px;padding:16px;height:150px;display:flex;flex-direction:column;justify-content:space-between;backdrop-filter:blur(10px)}
+.card.alert{border-color:#ff3b30;box-shadow:0 0 0 1px #ff3b3022}
+.label{font-size:10px;letter-spacing:1px;opacity:.6;font-weight:700}
+.value{font-size:30px;font-weight:900;text-align:center;line-height:1}
+.unit{font-size:11px;opacity:.6;text-align:center}
+.bar{height:6px;background:#ffffff14;border-radius:50px;overflow:hidden}
+.fill{height:100%;background:#1ed760}
+.fill.alert{background:#ff3b30}
+.aa{margin-top:22px;background:#000;border-radius:18px;overflow:hidden;border:1px solid #ffffff18}
+.aa-head{background:#1a1d24;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;font-size:12px;opacity:.9}
+.aa-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:#ffffff12}
+.aa-item{background:#0f1115;padding:18px;text-align:center}
+.aa-item b{font-size:11px;opacity:.6}
+.aa-item div{font-size:22px;font-weight:800;margin-top:6px}
+.small{font-size:11px;opacity:.6;text-align:center;margin-top:12px}
+select{background:#1a1d24;color:#fff;border:1px solid #ffffff18;border-radius:8px;padding:6px 8px;font-size:11px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <div class="badge"><div class="dot" id="dot"></div><div><div style="font-weight:800;font-size:13px" id="status">Conectado • DEMO ELM327</div><div style="font-size:11px;opacity:.6">Android Auto listo • Car Scanner compatible</div></div></div>
+    <button class="btn" onclick="toggle()">⏸ Pausar</button>
+  </div>
+
+  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+    <div style="font-weight:800">Perfil:</div>
+    <div class="chips" id="chips"></div>
+    <div style="margin-left:auto;display:flex;gap:8px;align-items:center"><span style="font-size:12px;opacity:.7">Tema</span>
+      <select id="theme" onchange="setTheme(this.value)">
+        <option value="dark">DARK PRO</option><option value="red">SPORT RED</option><option value="alpine">ALPINE</option><option value="carbon">CARBON</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="aa">
+    <div class="aa-head"><span>◀ Dashboard PRO • <span id="aaProfile">Sport</span></span><span>⚙ Tema &nbsp; 👤 Perfil</span></div>
+    <div class="aa-grid" id="aaGrid"></div>
+    <div style="padding:10px;background:#0f1115;font-size:11px;opacity:.5;text-align:center">Vista real en Android Auto (GridTemplate 2x3 • androidx.car.app)</div>
+  </div>
+
+  <p class="small">Toca cada tarjeta para cambiar el PID (RPM, Velocidad, Refrigerante, Turbo, Voltaje, etc). Este preview es idéntico al APK. Para probar en coche, instala Car Scanner y este APK usará los mismos PIDs.</p>
+  <p class="small" style="opacity:.4">Proyecto listo en /OBD2-Dashboard-Pro — Compila en Android Studio > Build > Build APK. O sube a GitHub y descarga el APK de Actions.</p>
+</div>
+
+<script>
+const PIDS = [
+  {id:'RPM', label:'RPM', unit:'rpm', min:0, max:8000},
+  {id:'SPEED', label:'Velocidad', unit:'km/h', min:0, max:250},
+  {id:'COOLANT', label:'Refrigerante', unit:'°C', min:-40, max:215},
+  {id:'BOOST', label:'Turbo', unit:'bar', min:0, max:3},
+  {id:'VOLTAGE', label:'Batería', unit:'V', min:0, max:20},
+  {id:'LOAD', label:'Carga motor', unit:'%', min:0, max:100},
+  {id:'INTAKE', label:'Admisión', unit:'°C', min:-40, max:215},
+  {id:'THROTTLE', label:'Acelerador', unit:'%', min:0, max:100},
+  {id:'MAF', label:'MAF', unit:'g/s', min:0, max:655},
+  {id:'FUEL', label:'Combustible', unit:'%', min:0, max:100},
+]
+const PROFILES = {
+  'Diario': ['SPEED','RPM','COOLANT','FUEL','VOLTAGE','LOAD'],
+  'Sport': ['RPM','SPEED','BOOST','INTAKE','THROTTLE','LOAD'],
+  '4x4 / Diesel': ['COOLANT','BOOST','MAF','VOLTAGE','FUEL','LOAD'],
+  'Eléctrico': ['SPEED','VOLTAGE','FUEL','COOLANT','LOAD','INTAKE'],
+}
+let currentProfile='Sport'
+let slots = PROFILES[currentProfile].slice()
+let running=true
+let values={}
+const chipsEl=document.getElementById('chips')
+const gridEl=document.getElementById('grid')
+const aaGridEl=document.getElementById('aaGrid')
+
+function renderChips(){
+  chipsEl.innerHTML=''
+  Object.keys(PROFILES).forEach(k=>{
+    const d=document.createElement('div')
+    d.className='chip'+(k===currentProfile?' active':'')
+    d.textContent=k
+    d.onclick=()=>{currentProfile=k; slots=PROFILES[k].slice(); document.getElementById('aaProfile').textContent=k; render()}
+    chipsEl.appendChild(d)
+  })
+}
+function pidById(id){return PIDS.find(p=>p.id===id)}
+function render(){
+  renderChips()
+  gridEl.innerHTML=''
+  aaGridEl.innerHTML=''
+  slots.forEach((pidId, idx)=>{
+    const pid=pidById(pidId)
+    const v=values[pidId]||0
+    const pct=Math.max(0,Math.min(1,(v-pid.min)/(pid.max-pid.min)))
+    const alert = (pidId==='COOLANT' && v>105) || (pidId==='RPM' && v>6500) || (pidId==='VOLTAGE' && v<11.8)
+    // mobile card
+    const card=document.createElement('div')
+    card.className='card'+(alert?' alert':'')
+    card.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><span class="label">${pid.label.toUpperCase()}</span><span style="font-size:10px;padding:4px 8px;border-radius:99px;background:${alert?'#ff3b3022':'#1ed76022'};color:${alert?'#ff3b30':'#1ed760'}">${alert?'⚠ ALERTA':'● OK'}</span></div>
+      <div><div class="value">${pidId==='VOLTAGE' || pidId==='BOOST' ? v.toFixed(1) : Math.round(v)}</div><div class="unit">${pid.unit}</div></div>
+      <div class="bar"><div class="fill ${alert?'alert':''}" style="width:${pct*100}%"></div></div>
+      <select onchange="changeSlot(${idx}, this.value)" style="width:100%;margin-top:6px"><option disabled>— cambiar PID —</option>${PIDS.map(p=>`<option value="${p.id}" ${p.id===pidId?'selected':''}>${p.label} (${p.unit})</option>`).join('')}</select>`
+    gridEl.appendChild(card)
+    // AA item
+    const aa=document.createElement('div')
+    aa.className='aa-item'
+    aa.innerHTML=`<b>${pid.label.toUpperCase()}</b><div style="color:${alert?'#ff3b30':'#fff'}">${pidId==='VOLTAGE' || pidId==='BOOST' ? v.toFixed(2) : Math.round(v)} <span style="font-size:12px;opacity:.6">${pid.unit}</span> ${alert?'⚠':''}</div>`
+    aaGridEl.appendChild(aa)
+  })
+}
+function changeSlot(idx, newId){slots[idx]=newId; render()}
+function setTheme(v){
+  if(v==='red') document.body.style.background='radial-gradient(1200px 600px at 20% 0%, #3a0f0f, #0a0c10)'
+  else if(v==='alpine') document.body.style.background='radial-gradient(1200px 600px at 20% 0%, #143741, #0a0c10)'
+  else if(v==='carbon') document.body.style.background='#121212'
+  else document.body.style.background='#0a0c10'
+}
+function toggle(){running=!running; document.querySelector('.btn').textContent=running?'⏸ Pausar':'▶ Reanudar'; document.getElementById('dot').style.background=running?'#1ed760':'#ff3b30'}
+function tick(){
+  if(running){
+    const t=Date.now()/1000
+    values['RPM']=850+Math.abs(Math.sin(t*0.7))*3500 + (Math.random()*160-80)
+    values['SPEED']=Math.abs(Math.sin(t*0.3))*120
+    values['COOLANT']=88+Math.random()*2
+    values['BOOST']=Math.abs(Math.sin(t*0.9))*1.2
+    values['VOLTAGE']=14.1+Math.random()*0.3-0.15
+    values['LOAD']=25+Math.abs(Math.sin(t*0.5))*50
+    values['INTAKE']=32+Math.random()*2
+    values['THROTTLE']=Math.abs(Math.sin(t*0.8))*85
+    values['MAF']=12+Math.random()*8
+    values['FUEL']=64
+    render()
+  }
+}
+setInterval(tick,180); tick(); render()
+</script>
+</body>
+</html>

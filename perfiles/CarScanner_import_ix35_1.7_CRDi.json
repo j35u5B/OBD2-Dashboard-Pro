@@ -1,0 +1,102 @@
+{
+  "_comment": "Perfil para importar MANUALMENTE en Car Scanner ELM OBD2. Car Scanner no usa JSON abierto, así que este archivo es tu guía 1:1 para clonar el dashboard en 2 minutos. Sigue los pasos de abajo.",
+  "app": "Car Scanner ELM OBD2",
+  "vehiculo": "Hyundai ix35 1.7 CRDi 116CV D4FD 2011 Euro5",
+  "instrucciones_import": [
+    "1. Abre Car Scanner > Ajustes > Adaptador > Elige tu ELM327 (Vgate/Veepeak) y conecta",
+    "2. Ajustes > Sensores > Marca: Hyundai/Kia > Activa 'Sensores extendidos' y 'Filtros extendidos'",
+    "3. Vuelve a Dashboard > pulsa '+' > Añadir gauge > selecciona los 6 sensores de abajo EN ORDEN",
+    "4. Para DPF: Añadir sensor > Hyundai/Kia > 'Exhaust Gas Temperature Bank1 Sensor3' o 'Catalyst Temperature' y 'DPF Soot Load' (si no aparece, usa Carga Motor como sustituto)",
+    "5. Mantén pulsado cada gauge > Ajustes > pon los rangos y alertas de abajo",
+    "6. Guarda perfil como 'ix35 1.7 CRDi ANALOG PRO'"
+  ],
+  "dashboard": {
+    "nombre": "ix35 1.7 CRDi ANALOG PRO",
+    "orientacion": "Horizontal 3x2 (2 grandes arriba)",
+    "tema": "Oscuro",
+    "gauges": [
+      {
+        "pos": 1,
+        "sensor_car_scanner": "RPM",
+        "pid": "010C",
+        "min": 0,
+        "max": 5000,
+        "alerta_roja": 4500,
+        "unidad": "rpm",
+        "estilo": "Dial analógico",
+        "nota": "Ralentí 750-800. Par máximo 1250-2750rpm. No pases de 4000 en conducción normal"
+      },
+      {
+        "pos": 2,
+        "sensor_car_scanner": "Speed (OBD)",
+        "pid": "010D",
+        "min": 0,
+        "max": 200,
+        "unidad": "km/h",
+        "estilo": "Dial analógico"
+      },
+      {
+        "pos": 3,
+        "sensor_car_scanner": "Intake Manifold Pressure / Boost",
+        "pid": "010B",
+        "alternativo": "010B + corrección barométrica (Car Scanner lo calcula solo como Boost)",
+        "min": 0,
+        "max": 2.0,
+        "alerta_roja": 1.7,
+        "unidad": "bar",
+        "estilo": "Dial analógico",
+        "rango_normal": "0.9-1.6 bar a plena carga"
+      },
+      {
+        "pos": 4,
+        "sensor_car_scanner": "Coolant Temperature",
+        "pid": "0105",
+        "min": 40,
+        "max": 120,
+        "alerta_roja": 102,
+        "critico": 108,
+        "unidad": "°C",
+        "normal": "86-92°C"
+      },
+      {
+        "pos": 5,
+        "sensor_car_scanner": "Intake Air Temperature",
+        "pid": "010F",
+        "min": 0,
+        "max": 90,
+        "alerta_roja": 65,
+        "unidad": "°C",
+        "normal": "Ambiente +15-25°C"
+      },
+      {
+        "pos": 6,
+        "sensor_car_scanner": "Exhaust Gas Temperature B1S3 (DPF)  O  Catalyst Temp",
+        "pid_extendido": "Hyundai: 2203B4 / 018B",
+        "ruta": "Hyundai/Kia > Exhaust Gas Temperature Bank 1 Sensor 3",
+        "min": 100,
+        "max": 650,
+        "alerta_roja": 580,
+        "critico": 620,
+        "unidad": "°C",
+        "fallback_si_no_lee": {
+          "sensor": "Engine Load",
+          "pid": "0104",
+          "min": 0,
+          "max": 100,
+          "unidad": "%"
+        },
+        "nota_dpf": "Si ves 585-620°C estable en autovía = REGENERACIÓN ACTIVA. No pares motor, mantén >2000rpm 12-18min"
+      }
+    ],
+    "sensores_extra_recomendados": [
+      {"sensor": "MAF", "pid": "0110", "normal_ralenti": "8-12 g/s", "normal_2500rpm": "35-45 g/s"},
+      {"sensor": "EGR Commanded %", "pid": "012C", "nota": "Si ves 0% siempre, EGR anulada o fallo"},
+      {"sensor": "DPF Soot Load %", "pid": "Hyundai ext. 2203A9", "alerta": ">80% = forzar regeneración"}
+    ]
+  },
+  "configuracion_car_scanner_recomendada": {
+    "protocolo": "Automático",
+    "hz": "5 Hz (Ajustes > Conexión > Frecuencia rápida)",
+    "android_auto": "Ajustes > Android Auto > Activar 'Mostrar en Android Auto' (si tu versión lo tiene) + usa nuestro APK Dashboard PRO para relojes analógicos nativos"
+  }
+}
