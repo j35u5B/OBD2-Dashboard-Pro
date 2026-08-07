@@ -68,7 +68,7 @@ dependencies {
 
     // Bluetooth / OBD2
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
-    implementation("com.github.eltonvs:elm327:1.0.3")
+
 
     debugImplementation("androidx.compose.ui:ui-tooling")
 }
