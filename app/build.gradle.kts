@@ -64,7 +64,6 @@ dependencies {
     // Android Auto - Car App Library (OFICIAL para AA)
     implementation("androidx.car.app:app:1.7.0")
     implementation("androidx.car.app:app-projected:1.7.0")
-    implementation("androidx.car.app:app-automotive:1.7.0")
 
     // Bluetooth / OBD2
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
